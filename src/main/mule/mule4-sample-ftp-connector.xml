@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ftp="http://www.mulesoft.org/schema/mule/ftp" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ftp http://www.mulesoft.org/schema/mule/ftp/current/mule-ftp.xsd">
+	<ftp:config name="FTP_Config" doc:name="FTP Config" doc:id="72480cb7-163c-46ab-836a-324b23a23b32" >
+		<ftp:connection host="localhost" username="test" password="test" />
+	</ftp:config>
+	<flow name="mule4-sample-ftp-connectorFlow" doc:id="8e494311-14c4-4315-a984-ac9f82934b89" >
+		<ftp:listener doc:name="On New or Updated File" doc:id="3682b4e8-7a17-4140-999d-8caf0f550225" config-ref="FTP_Config" directory="/demo/inbound">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</ftp:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="bf0b5ace-bf18-449a-8b28-993b554acce6" message="#[output text/plain --- 'Received filePath' ++ attributes.path ++ ', payload - ' ++ payload]"/>
+		<ftp:write doc:name="Write Outboud" doc:id="070aa958-b281-428c-a519-01b4a6fc000a" config-ref="FTP_Config" path="#['/demo/outbound/' ++ attributes.fileName]"/>
+		<ftp:delete doc:name="Delete Inbound" doc:id="ba32f5b3-817a-47db-be9a-0245ae583cc8" config-ref="FTP_Config" path="#[attributes.path]"/>
+		<ftp:copy doc:name="Copy -  Outbound to Copy directory" doc:id="eef988ca-34e5-4561-a26e-555c85b4a08f" config-ref="FTP_Config" sourcePath="#['/demo/outbound/' ++ attributes.fileName]" targetPath="/demo/copy/" overwrite="true"/>
+		<ftp:list doc:name="List of Copy" doc:id="134cb267-05b8-4f5e-9324-c8c48e49e8d5" config-ref="FTP_Config" directoryPath="/demo/copy/"/>
+		<logger level="INFO" doc:name="Logger" doc:id="11bc788c-81cd-400c-a3d7-035f67f5c6bb" message="#[output text/plain --- 'List after copy ' : payload]"/>
+	</flow>
+</mule>
